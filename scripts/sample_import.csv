@@ -1,0 +1,2 @@
+asset_code,asset_type,brand_model,purchased_at,purchase_price,market_price,assigned_to_email,department_name,status,is_buyback_allowed,buyback_available_at,notes
+DEV-IMPORT-0001,laptop,Lenovo ThinkPad X1,2025-03-01,9800.00,9500.00,alice@demo.local,技术部,in_service,true,2028-03-01,示例：导入时请根据实际情况填写

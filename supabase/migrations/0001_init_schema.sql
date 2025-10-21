@@ -166,20 +166,37 @@ language plpgsql
 as $$
 declare
     v_actor uuid;
+    v_pk_column text;
+    v_new_record_id uuid;
+    v_old_record_id uuid;
 begin
     v_actor := auth.uid();
 
+    if tg_nargs > 0 and tg_argv[0] is not null and tg_argv[0] <> '' then
+        v_pk_column := tg_argv[0];
+    else
+        v_pk_column := 'id';
+    end if;
+
+    if tg_op in ('INSERT', 'UPDATE') then
+        v_new_record_id := (to_jsonb(new)->>v_pk_column)::uuid;
+    end if;
+
+    if tg_op in ('UPDATE', 'DELETE') then
+        v_old_record_id := (to_jsonb(old)->>v_pk_column)::uuid;
+    end if;
+
     if tg_op = 'INSERT' then
         insert into public.audit_logs (table_name, record_id, operation, performed_by, old_data, new_data)
-        values (tg_table_name, new.id, 'INSERT', v_actor, null, to_jsonb(new));
+        values (tg_table_name, v_new_record_id, 'INSERT', v_actor, null, to_jsonb(new));
         return new;
     elsif tg_op = 'UPDATE' then
         insert into public.audit_logs (table_name, record_id, operation, performed_by, old_data, new_data)
-        values (tg_table_name, new.id, 'UPDATE', v_actor, to_jsonb(old), to_jsonb(new));
+        values (tg_table_name, coalesce(v_new_record_id, v_old_record_id), 'UPDATE', v_actor, to_jsonb(old), to_jsonb(new));
         return new;
     elsif tg_op = 'DELETE' then
         insert into public.audit_logs (table_name, record_id, operation, performed_by, old_data, new_data)
-        values (tg_table_name, old.id, 'DELETE', v_actor, to_jsonb(old), null);
+        values (tg_table_name, v_old_record_id, 'DELETE', v_actor, to_jsonb(old), null);
         return old;
     end if;
 
@@ -190,31 +207,31 @@ $$;
 -- Attach audit triggers
 create trigger trg_audit_departments
 after insert or update or delete on public.departments
-for each row execute function public.fn_write_audit_log();
+for each row execute function public.fn_write_audit_log('id');
 
 create trigger trg_audit_users_profile
 after insert or update or delete on public.users_profile
-for each row execute function public.fn_write_audit_log();
+for each row execute function public.fn_write_audit_log('user_id');
 
 create trigger trg_audit_assets
 after insert or update or delete on public.assets
-for each row execute function public.fn_write_audit_log();
+for each row execute function public.fn_write_audit_log('id');
 
 create trigger trg_audit_purchase_orders
 after insert or update or delete on public.purchase_orders
-for each row execute function public.fn_write_audit_log();
+for each row execute function public.fn_write_audit_log('id');
 
 create trigger trg_audit_repairs
 after insert or update or delete on public.repairs
-for each row execute function public.fn_write_audit_log();
+for each row execute function public.fn_write_audit_log('id');
 
 create trigger trg_audit_buybacks
 after insert or update or delete on public.buybacks
-for each row execute function public.fn_write_audit_log();
+for each row execute function public.fn_write_audit_log('id');
 
 create trigger trg_audit_verifications
 after insert or update or delete on public.verifications
-for each row execute function public.fn_write_audit_log();
+for each row execute function public.fn_write_audit_log('id');
 
 -- Employee facing view with masked employee info
 create or replace view public.view_employee_assets as

@@ -68,3 +68,22 @@
 	•	建表 ai_embeddings(id, type, ref_id, content, embedding vector) 并创建 ivfflat 索引；
 	•	写一个 Edge Function qa：embedding 相似检索 + 规则查询，返回“明年采购建议”和“高风险设备”；
 	•	给 curl 示例与前端调用代码。
+
+
+
+## 记录
+管理员：admin@demo.local / Admin#123456
+员工：alice@demo.local / Employee#1 
+
+
+
+## 启动命令
+
+
+## 系统prompt
+你是资深全栈工程师（Next.js + Supabase + Postgres + RLS + Deno Edge Functions）。
+请严格以仓库根目录下的《IT设备资产管理系统_PRD_v1.1_含表单设计.md》为唯一需求来源。
+所有输出必须可直接运行，并包含：文件路径、完整代码、执行命令、最小测试步骤。
+数据库变更用 Supabase migrations（新建 supabase/migrations/xxxxx.sql），同时给回滚思路。
+禁止臆造需求，如有不确定，用安全缺省实现并标注 TODO。 
+web端界面设计上参考飞书多维表格或者monday类似的产品
